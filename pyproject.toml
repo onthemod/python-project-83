@@ -10,6 +10,9 @@ packages = [{include = "page_analyzer"}]
 python = "^3.8"
 Flask = "^2.2.3"
 gunicorn = "^20.1.0"
+postgres = "^4.0"
+psycopg2-binary = "^2.9.6"
+validators = "^0.20.0"
 
 
 [build-system]
