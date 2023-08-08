@@ -35,6 +35,8 @@
 		    {{ url.name }}
 		</td><td>
 		    {{ url.check_date }}
+		</td><td>
+		    {{ url.status }}
 		</td>
         <td>
         <form action="{{ url_for('get_url',  id=url.id) }}" method="get">

@@ -50,13 +50,33 @@
 <table data-test="checks"> 
 <tr><td>
     id</td>
+     <td>
+    код ответа</td>
+     <td>
+    h1</td>
+     <td>
+   title</td>
+    <td>
+   description</td>
    <td>
-    date</td>
+    дата создания</td>
 </tr>        
  {% for url_check in url_checks %}
 	<tr>
     <td>
 	    {{ url_check.id }}
+        </td>
+         <td>
+	    {{ url_check.status}}
+        </td>
+         <td>
+	    {{ url_check.h1}}
+        </td>
+           <td>
+	    {{ url_check.title}}
+        </td>
+          <td>
+	    {{ url_check.description}}
         </td>
     <td>
 		{{ url_check.date }}	

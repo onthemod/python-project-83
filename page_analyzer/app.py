@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, flash, redirect, get_flashed_
 import psycopg2
 import os
 import validators
+import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 app.secret_key = "secret_key"
@@ -78,16 +80,21 @@ def get_urls_list(cur, params='', result_info=[]):
         print(urls_tuples)
     for url_tuple in urls_tuples:
         id, name, date = url_tuple
-        cur.execute(f"SELECT max(created_at) FROM url_checks where url_id={id}")
+        cur.execute(f"SELECT max(created_at), status_code FROM url_checks where url_id={id} group by status_code")
         url_check_tuples = cur.fetchall()
         check_date = ''
+        status = ''
         if url_check_tuples:
             check_date = url_check_tuples[0][0]
-        urls_list.append({'id': id, 'name': name, 'date' : date, 'check_date' : check_date})
+            status = url_check_tuples[0][1]
+            if not check_date:
+                check_date = ''
+        urls_list.append({'id': id, 'name': name, 'date' : date, 'check_date' : check_date, 'status' : status})
     return urls_list
  
 def make_check(curs, params = '', result_info=[]):
-    request_string = f"INSERT into url_checks (url_id, created_at) VALUES ('{params[0]}', NOW())"
+    print(f'check params = {params}')
+    request_string = f"INSERT into url_checks (url_id, status_code, created_at, h1, title, content) VALUES ('{params['check_id']}', '{params['status_code']}', NOW(),'{params['h1']}','{params['title']}','{params['content']}')"
     curs.execute(request_string)
     result_info.append(page_checked)
 
@@ -103,7 +110,7 @@ def get_url_data(cur, params='', result_info=[]):
     return urls_tuples[0]
     
 def get_url_checks(cur, params='', result_info=[]):
-    cur.execute(f"SELECT id, created_at FROM url_checks where url_id={params} order by created_at desc")
+    cur.execute(f"SELECT id, status_code, h1, title, description, created_at FROM url_checks where url_id={params} order by created_at desc")
     urls_tuples = cur.fetchall()
     urls_list= [] 
     if not urls_tuples:
@@ -134,17 +141,58 @@ def get_url(id):
         result = make_db_processing(get_url_checks, id)
         url_checks_list = []
         print(f"url_checks = {result}")
-        for url_check_tuple in result:
-            id, date = url_check_tuple
-            url_checks_list.append({'id': id, 'date' : date})
+        if result:
+            for url_check_tuple in result:
+                id, status, h1, title, description, date = url_check_tuple
+                if not status:
+                    status = ''
+                if not h1:
+                    h1 = ''
+                if not title:
+                    title = ''
+                if not description:
+                    description = ''
+                url_checks_list.append({'id': id, 'status' : status,'h1' : h1, 'title': title, 'description':description,'date' : date})
         return render_template("url.html", url=urls_data, url_checks = url_checks_list, messages = messages)
     
     return redirect(url_for('index'))
 
+
 @app.post('/urls/<id>/checks')
 def check_url(id):
     result_info = []
-    make_db_processing(make_check, id, result_info)
+    result = make_db_processing(get_url_data, id)
+    if result:
+        name = result[1]
+    try:
+        print(f'name = {name}')
+        req = requests.request("GET", name)
+    except:
+        flash("Произошла ошибка при проверке", "error")
+        return get_url(id)
+    html_content = req.text
+    
+    soup = BeautifulSoup(html_content, 'html.parser')
+    h1 = soup.find('h1')
+    if h1:
+        h1 = h1.text
+    else:
+        h1 = ''
+    title = soup.find('title')
+    if title:
+        title = title.text
+    else:
+        title = ''
+    print(f'=======h1 is {h1}')
+    meta_description_tag = soup.find('meta', attrs={'name': 'description'})
+    content = ''
+    if meta_description_tag:
+        content = meta_description_tag.get("content")
+        if not content:
+            content = ''
+
+    params = {'check_id': id, 'status_code': req.status_code, 'title': title, 'h1': h1, 'content': content}
+    make_db_processing(make_check, params, result_info)
     if page_checked in result_info:
         flash("Страница успешно проверена", "success")
         return get_url(id)
