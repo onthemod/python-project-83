@@ -54,18 +54,18 @@ def urls_page():
     url_string = request.form.to_dict().get('url', '')
     if url_string:
         if not validators.url(url_string):
-            flash("Некорректный URL", "error")
+            flash("Некорректный URL", "alert alert-danger")
             return redirect(url_for('index'))
         result_info = []
         make_db_processing(post_url, url_string, result_info)
         if page_added in result_info:
-            flash("Страница успешно добавлена", "success")
+            flash("Страница успешно добавлена", "alert alert-success")
             return get_urls()
         elif connection_failed in result_info:
-            flash("Нет соединения с базой данных", "error")
+            flash("Нет соединения с базой данных", "alert alert-danger")
             return redirect(url_for('index'))
         else:
-            flash("Страница уже существует", "error")
+            flash("Страница уже существует", "alert alert-info")
             print(f"тип id существующей старницы {type(result_info[0])}")
             return redirect(url_for('get_url', id=str('id')))
     return redirect(url_for('index'))
@@ -127,7 +127,7 @@ def get_urls():
     result_info = []
     urls_list = make_db_processing(get_urls_list, result_info=result_info)
     if connection_failed in result_info:
-        flash("Нет соединения с базой данных", "error")
+        flash("Нет соединения с базой данных", "alert alert-danger")
         return redirect(url_for('index'))
     return render_template("urls.html", urls=urls_list, messages = messages)
 
@@ -168,7 +168,7 @@ def check_url(id):
         print(f'name = {name}')
         req = requests.request("GET", name)
     except:
-        flash("Произошла ошибка при проверке", "error")
+        flash("Произошла ошибка при проверке", "alert alert-danger")
         return get_url(id)
     html_content = req.text
     
@@ -194,7 +194,7 @@ def check_url(id):
     params = {'check_id': id, 'status_code': req.status_code, 'title': title, 'h1': h1, 'content': content}
     make_db_processing(make_check, params, result_info)
     if page_checked in result_info:
-        flash("Страница успешно проверена", "success")
+        flash("Страница успешно проверена", "alert alert-success")
         return get_url(id)
 
 
