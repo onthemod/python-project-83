@@ -65,7 +65,7 @@ def urls_page():
             flash("Нет соединения с базой данных", "alert alert-danger")
             return redirect(url_for('index'))
         else:
-            flash("Страница уже существует", "alert alert-info")
+            flash("Страница уже существует", "alert alert-danger")
             print(f"тип id существующей старницы {type(result_info[0])}")
             return redirect(url_for('get_url', id=str('id')))
     return redirect(url_for('index'))
@@ -89,7 +89,7 @@ def get_urls_list(cur, params='', result_info=[]):
             status = url_check_tuples[0][1]
             if not check_date:
                 check_date = ''
-        urls_list.append({'id': id, 'name': name, 'date' : date, 'check_date' : check_date, 'status' : status})
+        urls_list.append({'id': id, 'name': name, 'date' : date.date(), 'check_date' : check_date.date(), 'status' : status})
     return urls_list
  
 def make_check(curs, params = '', result_info=[]):
@@ -110,7 +110,7 @@ def get_url_data(cur, params='', result_info=[]):
     return urls_tuples[0]
     
 def get_url_checks(cur, params='', result_info=[]):
-    cur.execute(f"SELECT id, status_code, h1, title, description, created_at FROM url_checks where url_id={params} order by created_at desc")
+    cur.execute(f"SELECT id, status_code, h1, title, content, created_at FROM url_checks where url_id={params} order by created_at desc")
     urls_tuples = cur.fetchall()
     urls_list= [] 
     if not urls_tuples:
@@ -137,22 +137,22 @@ def get_url(id):
     result = make_db_processing(get_url_data, id)
     if result:
         id, name, date = result
-        urls_data = {"id" : id, "name":name, "date":date}
+        urls_data = {"id" : id, "name":name, "date":date.date()}
         result = make_db_processing(get_url_checks, id)
         url_checks_list = []
         print(f"url_checks = {result}")
         if result:
             for url_check_tuple in result:
-                id, status, h1, title, description, date = url_check_tuple
+                id, status, h1, title, content, date = url_check_tuple
                 if not status:
                     status = ''
                 if not h1:
                     h1 = ''
                 if not title:
                     title = ''
-                if not description:
-                    description = ''
-                url_checks_list.append({'id': id, 'status' : status,'h1' : h1, 'title': title, 'description':description,'date' : date})
+                if not content:
+                    content = ''
+                url_checks_list.append({'id': id, 'status' : status,'h1' : h1, 'title': title, 'content':content,'date' : date.date()})
         return render_template("url.html", url=urls_data, url_checks = url_checks_list, messages = messages)
     
     return redirect(url_for('index'))
