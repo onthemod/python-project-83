@@ -87,9 +87,11 @@ def get_urls_list(cur, params='', result_info=[]):
         if url_check_tuples:
             check_date = url_check_tuples[0][0]
             status = url_check_tuples[0][1]
-            if not check_date:
+            if check_date:
+                check_date = check_date.date()
+            else:
                 check_date = ''
-        urls_list.append({'id': id, 'name': name, 'date' : date.date(), 'check_date' : check_date.date(), 'status' : status})
+        urls_list.append({'id': id, 'name': name, 'date' : date.date(), 'check_date' : check_date, 'status' : status})
     return urls_list
  
 def make_check(curs, params = '', result_info=[]):
