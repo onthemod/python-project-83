@@ -198,5 +198,3 @@ def check_url(id):
     if page_checked in result_info:
         flash("Страница успешно проверена", "alert alert-success")
         return get_url(id)
-
-
