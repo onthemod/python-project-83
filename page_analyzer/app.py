@@ -6,11 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
-app.secret_key = "secret_key"
-need_commit = "need commit"
-page_added = "page added"
-page_checked = "page checked"
-connection_failed = 'Connection failed'
+app.secret_key = os.getenv('SECRET_KEY')
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
