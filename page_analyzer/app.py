@@ -12,6 +12,7 @@ page_added = "page added"
 page_checked = "page checked"
 connection_failed = 'Connection failed'
 
+DATABASE_URL = os.getenv('DATABASE_URL')
 
 @app.route('/')
 def index():
@@ -27,15 +28,14 @@ def urls_page():
             flash("Некорректный URL", "alert alert-danger")
             return redirect(url_for('index'))
         result_info = []
-        DATABASE_URL = os.getenv('DATABASE_URL')
         with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor() as curs:
                 curs.execute(f"SELECT id from urls WHERE name='{url_string}'")
                 urls_tuples = curs.fetchall()
                 if urls_tuples:
                     flash("Страница уже существует", "alert alert-danger")
-                    print(f" Такой вот кортеж-мортеж {url_tuples[0]}")
-                    return redirect(url_for('get_url', id=id))
+                    print(f" Такой вот кортеж-мортеж {urls_tuples[0]}")
+                    return redirect(url_for('get_url', id=urls_tuples[0][0]))
                 curs.execute(f"INSERT into urls (name, created_at) VALUES ('{url_string}', NOW())")
                 conn.commit()
                 flash("Страница успешно добавлена", "alert alert-success")
@@ -55,6 +55,8 @@ def get_urls():
 @app.get('/urls/<id>')
 def get_url(id):
     messages = get_flashed_messages(with_categories=True)
+    print('before get url data')
+    print(id)
     result = make_db_processing(get_url_data, id)
     if result:
         id, name, date = result
@@ -132,14 +134,13 @@ def post_url(curs, url, result_info = []):
 
 def make_db_processing(query_function, params = '', result_info = []):
     print('making processing')
-    DATABASE_URL = os.getenv('DATABASE_URL')
-    print(DATABASE_URL)
     try:
         conn = psycopg2.connect(DATABASE_URL)
     except:
         result_info.append(connection_failed)
         print("Эксепшен, йо")
         return 
+    print(f'params in make_db_processing = {params}')
     with conn.cursor() as curs:
         query_result = query_function(curs, params, result_info) #посмотреть, как лучше возвращать результат
         if page_added in result_info or page_checked in result_info:
@@ -180,6 +181,7 @@ def make_check(curs, params = '', result_info=[]):
     result_info.append(page_checked)
 
 def get_url_data(cur, params='', result_info=[]):
+    print(f' get url data params {params}')
     cur.execute(f"SELECT * FROM urls where id={params}")
     urls_tuples = cur.fetchall()
     urls_list= [] 
