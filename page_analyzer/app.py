@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY')
+app.secret_key = 'secret key'
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 
@@ -90,14 +90,6 @@ def get_url(id):
             if url_checks_tuples:
                 for url_check_tuple in url_checks_tuples:
                     id, status, h1, title, content, date = url_check_tuple
-                    if not status:
-                        status = ''
-                    if not h1:
-                        h1 = ''
-                    if not title:
-                        title = ''
-                    if not content:
-                        content = ''
                     url_checks_list.append({'id': id, 'status' : status,'h1' : h1, 'title': title, 'content':content,'date' : date.date()})
             return render_template("url.html", url=urls_data, url_checks = url_checks_list, messages = messages)
    
@@ -122,25 +114,19 @@ def check_url(id):
     
             soup = BeautifulSoup(html_content, 'html.parser')
             h1 = soup.find('h1')
-            if h1:
-                h1 = h1.text
-            else:
-                h1 = ''
+            h1 = h1.text if h1 else ''
             title = soup.find('title')
-            if title:
-                title = title.text
-            else:
-                title = ''
+            title = title.text if title else ''
             print(f'=======h1 is {h1}')
             meta_description_tag = soup.find('meta', attrs={'name': 'description'})
             content = ''
             if meta_description_tag:
                 content = meta_description_tag.get("content")
-                if not content:
-                    content = ''
+                content = content if content else ''
 
             params = {'check_id': id, 'status_code': req.status_code, 'title': title, 'h1': h1, 'content': content}
             request_string = "INSERT into url_checks (url_id, status_code, created_at, h1, title, content) VALUES (%s, %s, NOW(),%s,%s,%s);"
             cur.execute(request_string, (params['check_id'],params['status_code'],params['h1'],params['title'],params['content']))
+            conn.commit()
             flash("Страница успешно проверена", "alert alert-success")
             return get_url(id)
