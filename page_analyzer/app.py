@@ -47,28 +47,32 @@ def get_urls():
     result_info = []
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM urls order by created_at desc")
+            sql_query = """
+            SELECT
+                u.id AS url_id,
+                u.name AS url_name,
+                COALESCE(uc.status_code, '') AS status_code,
+                uc.created_at AS max_created_at
+            FROM
+                urls u
+            LEFT JOIN (
+                SELECT
+                    url_id,
+                    status_code,
+                    created_at,
+                    ROW_NUMBER() OVER (PARTITION BY url_id ORDER BY created_at DESC) AS row_num
+                FROM
+                    url_checks
+            ) uc ON u.id = uc.url_id AND uc.row_num = 1
+            ORDER BY u.created_at DESC;
+            """
+            cur.execute(sql_query)
             urls_tuples = cur.fetchall()
-            urls_list= [] 
-            if not urls_tuples:
-                print('empty')
-            else:
-                print(urls_tuples)
+            urls_list= []
             for url_tuple in urls_tuples:
-                id, name, date = url_tuple
-                get_max_date_query = "SELECT max(created_at), status_code FROM url_checks where url_id=%s group by status_code;"
-                cur.execute(get_max_date_query, (id,))
-                url_check_tuples = cur.fetchall()
-                check_date = ''
-                status = ''
-                if url_check_tuples:
-                    check_date = url_check_tuples[0][0]
-                    status = url_check_tuples[0][1]
-                    if check_date:
-                        check_date = check_date.date()
-                    else:
-                        check_date = ''
-                urls_list.append({'id': id, 'name': name, 'date' : date.date(), 'check_date' : check_date, 'status' : status})
+                id, name, status, date = url_tuple
+                date = (date.date() if date else '')
+                urls_list.append({'id': id, 'name': name, 'check_date' : date , 'status' : status})
             return render_template("urls.html", urls=urls_list, messages = messages)
 
 @app.get('/urls/<id>')
