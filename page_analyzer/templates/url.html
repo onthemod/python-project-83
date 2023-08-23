@@ -62,7 +62,7 @@
     
   <div>
     <table class="table table-bordered table-hover mt-2" data-test="checks">
-    <thead>
+    <tbody>
       <tr>
         <th scope="col">ID</th>
         <th scope="col">Код ответа</th>
@@ -70,18 +70,16 @@
         <th scope="col">title</th>
         <th scope="col">description</th>
         <th scope="col">Дата создания</th>
-      </tr>
-    </thead>
-      <tbody>
+      </tr>   
       
  {% for url_check in url_checks %}
   <tr>
-        <th> {{ url_check.id }}</th>
-        <th>{{ url_check.status}}</th>
-        <th>{{ url_check.h1}}</th>
-        <th>{{ url_check.title}}</th>
-        <th> {{ url_check.description}}</th>
-        <th>{{ url_check.date }}</th>
+        <td> {{ url_check.id }}</td>
+        <td>{{ url_check.status}}</td>
+        <td>{{ url_check.h1}}</td>
+        <td>{{ url_check.title}}</td>
+        <td> {{ url_check.description}}</td>
+        <td>{{ url_check.date }}</td>
           </tr>
   {% endfor %}
     </tbody>
