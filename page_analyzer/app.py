@@ -33,15 +33,16 @@ def urls_page():
                 curs.execute(get_ids_of_url_query, (url_string,))
                 urls_tuples = curs.fetchall()
                 if urls_tuples:
+                    url_id = urls_tuples[0][0]
                     print('страница существует')
                     flash("Страница уже существует", "alert alert-danger")
-                    return redirect(url_for('get_url', id=urls_tuples[0][0])), 422
-                add_url_query = "INSERT into urls (name, created_at) VALUES (%s, NOW()) returning id;"
-                curs.execute(add_url_query, (url_string,))
-                new_id = curs.fetchone()[0]
-                conn.commit()
-                flash("Страница успешно добавлена", "alert alert-success")
-                return redirect(url_for('get_url', id=new_id))
+                else
+                    add_url_query = "INSERT into urls (name, created_at) VALUES (%s, NOW()) returning id;"
+                    curs.execute(add_url_query, (url_string,))
+                    url_id = curs.fetchone()[0]
+                    conn.commit()
+                    flash("Страница успешно добавлена", "alert alert-success")
+                return redirect(url_for('get_url', id=url_id)), 301
     
 @app.get('/urls')
 def get_urls():
