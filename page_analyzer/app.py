@@ -36,7 +36,7 @@ def urls_page():
                     url_id = urls_tuples[0][0]
                     print('страница существует')
                     flash("Страница уже существует", "alert alert-danger")
-                else
+                else:
                     add_url_query = "INSERT into urls (name, created_at) VALUES (%s, NOW()) returning id;"
                     curs.execute(add_url_query, (url_string,))
                     url_id = curs.fetchone()[0]
