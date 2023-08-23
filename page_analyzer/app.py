@@ -5,6 +5,7 @@ import validators
 import requests
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 load_dotenv()
 
@@ -22,6 +23,8 @@ def index():
 def urls_page():
     print(request.form.to_dict())
     url_string = request.form.to_dict().get('url', '')
+    url_string = urlparse(url_string)
+    url_string=f'{url_string.scheme}://{url_string.netloc}'
     if url_string:
         if not validators.url(url_string):
             flash("Некорректный URL", "alert alert-danger")
