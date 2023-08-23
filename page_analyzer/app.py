@@ -101,7 +101,8 @@ def get_url(id):
             if url_checks_tuples:
                 for url_check_tuple in url_checks_tuples:
                     id, status, h1, title, content, date = url_check_tuple
-                    url_checks_list.append({'id': id, 'status' : status,'h1' : h1, 'title': title, 'content':content,'date' : date.date()})
+                    print(f'ccccccccccccc {content}')
+                    url_checks_list.append({'id': id, 'status' : status,'h1' : h1, 'title': title, 'content':content, 'date' : date.date()})
             return render_template("url.html", url=urls_data, url_checks = url_checks_list, messages = messages)
    
 @app.post('/urls/<id>/checks')
@@ -128,7 +129,6 @@ def check_url(id):
             h1 = h1.text if h1 else ''
             title = soup.find('title')
             title = title.text if title else ''
-            print(f'=======h1 is {h1}')
             meta_description_tag = soup.find('meta', attrs={'name': 'description'})
             content = ''
             if meta_description_tag:
