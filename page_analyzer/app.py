@@ -23,12 +23,12 @@ def index():
 def urls_page():
     print(request.form.to_dict())
     url_string = request.form.to_dict().get('url', '')
+    if not validators.url(url_string):
+        flash("Некорректный URL", "alert alert-danger")
+        return redirect(url_for('index')), 422
     url_string = urlparse(url_string)
     url_string=f'{url_string.scheme}://{url_string.netloc}'
     if url_string:
-        if not validators.url(url_string):
-            flash("Некорректный URL", "alert alert-danger")
-            return redirect(url_for('index'))
         result_info = []
         with psycopg2.connect(DATABASE_URL) as conn:
             with conn.cursor() as curs:
