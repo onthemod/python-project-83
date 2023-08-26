@@ -120,7 +120,7 @@ def check_url(id):
                 req = requests.request("GET", name)
             except:
                 flash("Произошла ошибка при проверке", "alert alert-danger")
-                return get_url(id)
+                return redirect(url_for('get_url', id=id))
             html_content = req.text
     
             soup = BeautifulSoup(html_content, 'html.parser')
