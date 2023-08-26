@@ -117,7 +117,10 @@ def check_url(id):
                 name = urls_tuples[0][1]
             try:
                 print(f'name = {name}')
-                req = requests.request("GET", name)
+                req = requests.request("GET", 'name')
+                status_code = resourse.status_code
+                if status_code != 200:
+                    raise requests.RequestException
             except:
                 flash("Произошла ошибка при проверке", "alert alert-danger")
                 return redirect(url_for('get_url', id=id))
