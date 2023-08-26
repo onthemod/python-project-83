@@ -24,8 +24,8 @@ def urls_page():
     print(request.form.to_dict())
     url_string = request.form.to_dict().get('url', '')
     if not validators.url(url_string):
-        flash("Некорректный URL", "alert alert-danger")
-        return redirect(url_for('index'), code=422)
+        messages = [("alert alert-danger", "Некорректный URL")]
+        return render_template("main.html", messages = messages), 422
     url_string = urlparse(url_string)
     url_string=f'{url_string.scheme}://{url_string.netloc}'
     if url_string:
@@ -85,7 +85,7 @@ def get_urls():
 @app.get('/urls/<id>')
 def get_url(id):
     messages = get_flashed_messages(with_categories=True)
-    print('before get url data')
+    print(f'messages = {messages}')
     print(id)
     with psycopg2.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
@@ -101,7 +101,6 @@ def get_url(id):
             if url_checks_tuples:
                 for url_check_tuple in url_checks_tuples:
                     id, status, h1, title, content, date = url_check_tuple
-                    print(f'ccccccccccccc {content}')
                     url_checks_list.append({'id': id, 'status' : status,'h1' : h1, 'title': title, 'content':content, 'date' : date.date()})
             return render_template("url.html", url=urls_data, url_checks = url_checks_list, messages = messages)
    
