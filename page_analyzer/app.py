@@ -117,7 +117,7 @@ def check_url(id):
                 name = urls_tuples[0][1]
             try:
                 print(f'name = {name}')
-                req = requests.request("GET", 'name')
+                req = requests.request("GET", name)
                 status_code = req.status_code
                 if status_code != 200:
                     raise requests.RequestException
